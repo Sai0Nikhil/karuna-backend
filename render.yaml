@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: karuna-backend
+    runtime: java
+    buildCommand: "./mvnw clean package -DskipTests"
+    startCommand: "java -jar target/karuna-backend-*.jar"
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false          # you paste this in Render dashboard
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: KARUNA_JWT_SECRET
+        sync: false
+      - key: AI_PROVIDER
+        value: gemini        # or claude
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CLAUDE_API_KEY
+        sync: false
+    healthCheckPath: /api/auth/health
