@@ -60,7 +60,10 @@ public class AiController {
             return ResponseEntity.badRequest().body(Map.of("message", "imageDataUrl is required"));
         }
         try {
-            AiAnalysisResult result = geminiService.analyzePhoto(imageDataUrl);
+            String lat = body.getOrDefault("lat", "");
+            String lon = body.getOrDefault("lon", "");
+            String description = body.getOrDefault("description", "");
+            AiAnalysisResult result = geminiService.analyzePhoto(imageDataUrl, lat, lon, description);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()

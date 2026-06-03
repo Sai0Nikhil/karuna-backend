@@ -12,6 +12,9 @@ public class AiAnalysisResult {
     private Integer estimatedCostInr;   // e.g. 4500
     private String aiSummary;           // 1–2 sentence plain-English summary for NGO
     private String confidence;          // "high" | "medium" | "low"
+    private String medicines;           // JSON array of {name, dosage, route, frequency, notes}
+    private String localSupport;        // JSON array of {name, address, phone}
+    private String disclaimer;          // safety warning text
 
     public AiAnalysisResult() {}
 
@@ -36,4 +39,13 @@ public class AiAnalysisResult {
 
     public String getConfidence() { return confidence; }
     public void setConfidence(String v) { this.confidence = v; }
+
+    public String getMedicines() { return medicines; }
+    public void setMedicines(String v) { this.medicines = v; }
+
+    public String getLocalSupport() { return localSupport; }
+    public void setLocalSupport(String v) { this.localSupport = v; }
+
+    public String getDisclaimer() { return disclaimer; }
+    public void setDisclaimer(String v) { this.disclaimer = v; }
 }

@@ -35,21 +35,51 @@ public class GeminiService {
     }
 
     // ─── 2. Analyze photo (vision) ─────────────────────────────────────────
-    public AiAnalysisResult analyzePhoto(String base64ImageDataUrl) {
+    public AiAnalysisResult analyzePhoto(String base64ImageDataUrl, String lat, String lon, String description) {
+        String locationInfo = (lat != null && !lat.isBlank() && lon != null && !lon.isBlank())
+            ? "User is at latitude " + lat + ", longitude " + lon + " (India)."
+            : "User location not provided.";
+        String descPart = (description != null && !description.isBlank())
+            ? "Additional context from user: \"" + description + "\""
+            : "";
+
         String prompt = """
-            You are an expert veterinary AI assistant for the Karuṇā animal rescue platform.
-            Analyze this image of an animal and provide a structured JSON response:
+            You are Karuṇā, a compassionate veterinary AI assistant for animal rescue in India.
+            Analyze this image and provide a structured JSON response.
+            """ + locationInfo + "\n" + descPart + """
+
+            VETERINARY CONTACTS DATABASE (pick 2-3 nearest based on location):
+            [
+              {"name":"NTR Veterinary Super Specialty Hospital","address":"Bunder Road, Labbipet, Vijayawada, AP 520010","phone":"N/A"},
+              {"name":"Prathyusha Pet Clinic","address":"Labbipet, Vijayawada, AP 520010","phone":"N/A"},
+              {"name":"Bluewings Pet Clinic","address":"Veterinary Colony, Vijayawada, AP 520008","phone":"N/A"},
+              {"name":"K-Petz Hospital (24-hour)","address":"Gunadala Poranki, Vijayawada, AP","phone":"N/A"},
+              {"name":"Animal Warriors Conservation Society","address":"Hyderabad, Telangana","phone":"Via Facebook"},
+              {"name":"AASRA Pets","address":"Bowrampet, Hyderabad, Telangana","phone":"weaasra.org"},
+              {"name":"PETA India (Delhi Office)","address":"Delhi, NCR","phone":"petaindia.com"},
+              {"name":"Delhi Govt. Veterinary Hospital, Rohini","address":"Rohini, Delhi","phone":"Contact MCD"},
+              {"name":"Delhi Govt. Veterinary Hospital, Dwarka","address":"Dwarka, Delhi","phone":"Contact MCD"},
+              {"name":"Pet Care Clinic, Visakhapatnam","address":"Murali Nagar, Visakhapatnam, AP 530007","phone":"N/A"}
+            ]
+
+            Return ONLY valid JSON (no markdown):
             {
               "species": "dog/cat/cow/bird/other",
               "injuryType": "brief injury description",
               "severity": "critical/urgent/routine",
               "probableCondition": "detailed medical assessment",
-              "firstAidSteps": ["step 1", "step 2", "step 3"],
+              "firstAidSteps": ["step 1", "step 2", "step 3", "step 4"],
+              "medicines": [
+                {"name": "MedicineName", "dosage": "dose/kg", "route": "Oral/IV/Topical", "frequency": "Every X hours", "notes": "practical usage tip for citizen"}
+              ],
+              "localSupport": [
+                {"name": "Nearest Clinic Name", "address": "Full address", "phone": "number or N/A"}
+              ],
+              "disclaimer": "This is emergency first aid only. Severe wounds require immediate professional veterinary care.",
               "estimatedCostInr": <integer>,
               "aiSummary": "1-2 sentence summary for rescuers",
               "confidence": "high/medium/low"
             }
-            Respond ONLY with valid JSON, no markdown, no extra text.
             """;
 
         String imageBase64 = base64ImageDataUrl;
@@ -63,6 +93,11 @@ public class GeminiService {
 
         String raw = ai.completeWithImage(prompt, imageBase64, mimeType);
         return parseCaseAnalysis(raw);
+    }
+
+    // backward-compat overload
+    public AiAnalysisResult analyzePhoto(String base64ImageDataUrl) {
+        return analyzePhoto(base64ImageDataUrl, "", "", "");
     }
 
     // ─── 3. First Aid chatbot ──────────────────────────────────────────────
@@ -139,6 +174,9 @@ public class GeminiService {
               "severity": "critical OR urgent OR routine",
               "injuryType": "refined injury classification",
               "firstAidSteps": ["rescuer step 1", "step 2", "step 3", "step 4"],
+              "medicines": [
+                {"name": "MedicineName", "dosage": "dose/kg", "route": "Oral/IV/Topical", "frequency": "Every X hours", "notes": "brief usage note"}
+              ],
               "estimatedCostInr": <integer, India context>,
               "aiSummary": "1-2 sentence plain English summary for NGO dispatch",
               "confidence": "high OR medium OR low"
@@ -180,6 +218,12 @@ public class GeminiService {
             if (node.has("confidence"))        result.setConfidence(node.get("confidence").asText());
             if (node.has("firstAidSteps") && node.get("firstAidSteps").isArray())
                 result.setFirstAidSteps(mapper.writeValueAsString(node.get("firstAidSteps")));
+            if (node.has("medicines") && node.get("medicines").isArray())
+                result.setMedicines(mapper.writeValueAsString(node.get("medicines")));
+            if (node.has("localSupport") && node.get("localSupport").isArray())
+                result.setLocalSupport(mapper.writeValueAsString(node.get("localSupport")));
+            if (node.has("disclaimer"))
+                result.setDisclaimer(node.get("disclaimer").asText());
 
             log.info("AI analysis complete via {} — severity={}, confidence={}",
                     ai.providerName(), result.getSeverity(), result.getConfidence());
