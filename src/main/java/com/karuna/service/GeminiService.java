@@ -57,7 +57,7 @@ public class GeminiService {
             - If it is any other animal (e.g. goat, sheep, monkey, donkey, pig, buffalo, squirrel, snake, rabbit), classify it as "other".
             """ + locationInfo + "\n" + descPart + """
 
-            VETERINARY CONTACTS DATABASE (pick 2-3 nearest based on location):
+            VETERINARY CONTACTS DATABASE (Pick 2-3 nearest based on location. If the user location is not near Vijayawada, Hyderabad, Delhi, or Visakhapatnam, ignore this list and suggest real clinics near the user's location, such as in Chennai, Bangalore, Mumbai, etc.):
             [
               {"name":"NTR Veterinary Super Specialty Hospital","address":"Bunder Road, Labbipet, Vijayawada, AP 520010","phone":"N/A"},
               {"name":"Prathyusha Pet Clinic","address":"Labbipet, Vijayawada, AP 520010","phone":"N/A"},
@@ -68,7 +68,10 @@ public class GeminiService {
               {"name":"PETA India (Delhi Office)","address":"Delhi, NCR","phone":"petaindia.com"},
               {"name":"Delhi Govt. Veterinary Hospital, Rohini","address":"Rohini, Delhi","phone":"Contact MCD"},
               {"name":"Delhi Govt. Veterinary Hospital, Dwarka","address":"Dwarka, Delhi","phone":"Contact MCD"},
-              {"name":"Pet Care Clinic, Visakhapatnam","address":"Murali Nagar, Visakhapatnam, AP 530007","phone":"N/A"}
+              {"name":"Pet Care Clinic, Visakhapatnam","address":"Murali Nagar, Visakhapatnam, AP 530007","phone":"N/A"},
+              {"name":"Madras Veterinary College Teaching Hospital","address":"Vepery, Chennai, Tamil Nadu 600007","phone":"044-25304000"},
+              {"name":"Blue Cross of India","address":"Velachery, Chennai, Tamil Nadu 600042","phone":"044-22354985"},
+              {"name":"Sanchu Animal Hospital","address":"Adyar, Chennai, Tamil Nadu 600020","phone":"9445170000"}
             ]
 
             Return ONLY valid JSON (no markdown):

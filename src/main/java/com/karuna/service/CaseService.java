@@ -80,7 +80,10 @@ public class CaseService {
                 log.info("Running Gemini Vision analysis for new case (with photo)");
                 aiResult = geminiService.analyzePhoto(req.getImageDataUrl());
                 if (aiResult != null && aiResult.getSpecies() != null) {
-                    detectedSpecies = aiResult.getSpecies();
+                    if (detectedSpecies == null || detectedSpecies.trim().isEmpty() || 
+                        detectedSpecies.equalsIgnoreCase("other") || detectedSpecies.equalsIgnoreCase("unknown")) {
+                        detectedSpecies = aiResult.getSpecies();
+                    }
                 }
             }
             // Always run text analysis (overrides vision if text is more specific)
