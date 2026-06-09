@@ -27,8 +27,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/auth/health").permitAll()
-                // AI endpoints: firstaid is public (no login needed), others require auth
+                // AI endpoints: firstaid and photo analysis are public (no login needed)
                 .requestMatchers("/api/ai/firstaid").permitAll()
+                .requestMatchers("/api/ai/analyze-photo").permitAll()
                 .requestMatchers("/api/ai/**").authenticated()
                 .requestMatchers("/api/cases/**").authenticated()
                 .requestMatchers("/api/donations/**").authenticated()
