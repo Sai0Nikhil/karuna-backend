@@ -35,7 +35,7 @@ public class AdoptionService {
     }
 
     @Transactional
-    public AdoptionResponse apply(Long caseId, String applicantName, String contact, String reason) {
+    public AdoptionResponse apply(Long caseId, String applicantName, String contact, String reason, String adopterIdUrl) {
         var c = caseRepo.findById(caseId)
                 .orElseThrow(() -> new RuntimeException("Case not found"));
         AdoptionApplication app = AdoptionApplication.builder()
@@ -44,6 +44,8 @@ public class AdoptionService {
                 .contact(contact)
                 .reason(reason)
                 .status(AppStatus.pending)
+                .adopterIdUrl(adopterIdUrl)
+                .checkinsLogs("[]")
                 .caseRef(c)
                 .build();
         app = adoptionRepo.save(app);
@@ -64,10 +66,33 @@ public class AdoptionService {
         return toResponse(app);
     }
 
+    @Transactional
+    public AdoptionResponse addCheckin(Long appId, String text, String photoUrl) {
+        AdoptionApplication app = adoptionRepo.findById(appId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        
+        String cleanText = text == null ? "" : text.replace("\"", "\\\"");
+        String cleanPhoto = photoUrl == null ? "" : photoUrl.replace("\"", "\\\"");
+        String logEntry = String.format("{\"date\":\"%s\",\"text\":\"%s\",\"photoUrl\":\"%s\"}", 
+                LocalDateTime.now().toString(), cleanText, cleanPhoto);
+        
+        String currentLogs = app.getCheckinsLogs();
+        if (currentLogs == null || currentLogs.isBlank() || currentLogs.equals("[]")) {
+            app.setCheckinsLogs("[" + logEntry + "]");
+        } else {
+            app.setCheckinsLogs(currentLogs.substring(0, currentLogs.length() - 1) + "," + logEntry + "]");
+        }
+        app = adoptionRepo.save(app);
+        return toResponse(app);
+    }
+
     private AdoptionResponse toResponse(AdoptionApplication a) {
         return AdoptionResponse.builder()
                 .id(a.getId()).ts(a.getTs())
                 .applicantName(a.getApplicantName()).contact(a.getContact())
-                .reason(a.getReason()).status(a.getStatus().name()).build();
+                .reason(a.getReason()).status(a.getStatus().name())
+                .adopterIdUrl(a.getAdopterIdUrl())
+                .checkinsLogs(a.getCheckinsLogs())
+                .build();
     }
 }

@@ -82,7 +82,8 @@ public class AiController {
             String rawJson = geminiService.getFirstAid(
                     body.getOrDefault("species", "animal"),
                     body.getOrDefault("injuryDescription", ""),
-                    body.getOrDefault("locationContext", "")
+                    body.getOrDefault("locationContext", ""),
+                    body.getOrDefault("language", "English")
             );
             // Return as parsed JSON (not a string)
             if (rawJson != null) {

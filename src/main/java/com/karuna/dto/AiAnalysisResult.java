@@ -15,10 +15,14 @@ public class AiAnalysisResult {
     private String medicines;           // JSON array of {name, dosage, route, frequency, notes}
     private String localSupport;        // JSON array of {name, address, phone}
     private String disclaimer;          // safety warning text
+    private String species;             // e.g. "dog" | "cat" | "cow" | "bird" | "other"
 
     public AiAnalysisResult() {}
 
     // ─── Getters & Setters ─────────────────────────────────────────────
+    public String getSpecies() { return species; }
+    public void setSpecies(String v) { this.species = v; }
+
     public String getProbableCondition() { return probableCondition; }
     public void setProbableCondition(String v) { this.probableCondition = v; }
 

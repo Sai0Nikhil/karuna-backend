@@ -71,6 +71,7 @@ public class CaseService {
         String severity          = req.getSeverity() != null ? req.getSeverity() : "urgent";
         Integer estimatedCost    = req.getEstimatedCostInr();
         String aiSummary         = null;
+        String detectedSpecies   = req.getSpecies();
 
         try {
             // If a photo was provided, run vision analysis first
@@ -78,28 +79,37 @@ public class CaseService {
             if (req.getImageDataUrl() != null && !req.getImageDataUrl().isBlank()) {
                 log.info("Running Gemini Vision analysis for new case (with photo)");
                 aiResult = geminiService.analyzePhoto(req.getImageDataUrl());
+                if (aiResult != null && aiResult.getSpecies() != null) {
+                    detectedSpecies = aiResult.getSpecies();
+                }
             }
             // Always run text analysis (overrides vision if text is more specific)
-            if (req.getSpecies() != null || req.getProbableCondition() != null) {
-                log.info("Running Gemini text analysis for new case");
+            if (detectedSpecies != null || req.getProbableCondition() != null) {
+                log.info("Running Gemini text analysis for new case using species: {}", detectedSpecies);
                 AiAnalysisResult textResult = geminiService.analyzeCase(
-                        req.getSpecies(),
+                        detectedSpecies,
                         req.getInjuryType(),
                         req.getProbableCondition(),
                         req.getLocationLabel()
                 );
-                // Text analysis wins if available
-                if (textResult != null) aiResult = textResult;
+                // Text analysis wins if available, but preserve the visual-detected species!
+                if (textResult != null) {
+                    if (textResult.getSpecies() == null) {
+                        textResult.setSpecies(detectedSpecies);
+                    }
+                    aiResult = textResult;
+                }
             }
 
             if (aiResult != null) {
+                if (aiResult.getSpecies()           != null) detectedSpecies   = aiResult.getSpecies();
                 if (aiResult.getProbableCondition() != null) probableCondition = aiResult.getProbableCondition();
                 if (aiResult.getFirstAidSteps()     != null) firstAidSteps     = aiResult.getFirstAidSteps();
                 if (aiResult.getInjuryType()        != null && injuryType == null) injuryType = aiResult.getInjuryType();
                 if (aiResult.getSeverity()          != null) severity           = aiResult.getSeverity();
                 if (aiResult.getEstimatedCostInr()  != null) estimatedCost      = aiResult.getEstimatedCostInr();
                 aiSummary = aiResult.getAiSummary();
-                log.info("Gemini AI analysis complete. Severity={}, Confidence={}", aiResult.getSeverity(), aiResult.getConfidence());
+                log.info("Gemini AI analysis complete. Species={}, Severity={}, Confidence={}", detectedSpecies, aiResult.getSeverity(), aiResult.getConfidence());
             }
         } catch (Exception e) {
             log.error("Gemini analysis failed (non-fatal): {}", e.getMessage());
@@ -122,7 +132,7 @@ public class CaseService {
                 .latitude(req.getLatitude())
                 .longitude(req.getLongitude())
                 .locationLabel(req.getLocationLabel())
-                .species(req.getSpecies())
+                .species(detectedSpecies != null && !detectedSpecies.isBlank() ? detectedSpecies : "other")
                 .injuryType(injuryType)
                 .severity(severityEnum)
                 .probableCondition(probableCondition)
@@ -132,6 +142,30 @@ public class CaseService {
                 .notes(aiSummary != null ? "[\"AI: " + aiSummary.replace("\"", "'") + "\"]" : "[]")
                 .reporter(reporter)
                 .build();
+        // Automated Volunteer Matcher (Haversine Distance-based Auto-dispatch)
+        if (c.getLatitude() != null && c.getLongitude() != null) {
+            java.util.List<User> volunteers = userRepo.findByRoleAndAvailable(User.Role.VOLUNTEER, true);
+            User closestVolunteer = null;
+            double minDistance = Double.MAX_VALUE;
+            for (User v : volunteers) {
+                if (v.getLatitude() != null && v.getLongitude() != null) {
+                    double dist = calculateDistance(c.getLatitude(), c.getLongitude(), v.getLatitude(), v.getLongitude());
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closestVolunteer = v;
+                    }
+                }
+            }
+            // If closest volunteer is within 15 km, assign them auto-dispatched
+            if (closestVolunteer != null && minDistance < 15.0) {
+                c.setStatus(CaseStatus.assigned);
+                c.setAssignedResponder(closestVolunteer.getName());
+                closestVolunteer.setAvailable(false);
+                userRepo.save(closestVolunteer);
+                log.info("Auto-assigned case to closest volunteer: {} (distance: {} km)", closestVolunteer.getName(), minDistance);
+            }
+        }
+
         c = caseRepo.save(c);
         return toResponse(c);
     }
@@ -239,5 +273,16 @@ public class CaseService {
         } catch (Exception e) {
             return new ArrayList<>();
         }
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double earthRadius = 6371; // km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
     }
 }

@@ -42,6 +42,8 @@ public class DonationService {
                 .donorName(req.getDonorName())
                 .amountInr(req.getAmountInr())
                 .message(req.getMessage())
+                .paymentMethod(req.getPaymentMethod() != null ? req.getPaymentMethod() : "UPI")
+                .billOffsetDetails(req.getBillOffsetDetails())
                 .caseRef(c)
                 .build();
         d = donationRepo.save(d);
@@ -51,6 +53,9 @@ public class DonationService {
     private DonationResponse toResponse(Donation d) {
         return DonationResponse.builder()
                 .id(d.getId()).ts(d.getTs()).donorName(d.getDonorName())
-                .amountInr(d.getAmountInr()).message(d.getMessage()).build();
+                .amountInr(d.getAmountInr()).message(d.getMessage())
+                .paymentMethod(d.getPaymentMethod())
+                .billOffsetDetails(d.getBillOffsetDetails())
+                .build();
     }
 }

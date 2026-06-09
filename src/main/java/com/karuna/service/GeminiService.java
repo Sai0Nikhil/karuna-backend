@@ -46,6 +46,15 @@ public class GeminiService {
         String prompt = """
             You are Karuṇā, a compassionate veterinary AI assistant for animal rescue in India.
             Analyze this image and provide a structured JSON response.
+
+            CRITICAL SPECIES CLASSIFICATION RULES:
+            - You must accurately classify the animal in the image. The allowed values for the "species" field are exactly: "dog", "cat", "cow", "bird", or "other" (all lowercase).
+            - DO NOT confuse cattle (cows, bulls, calves, buffaloes) or goats with dogs. Street cattle of various sizes and breeds are very common in India.
+            - Look for key identifying physical features of cattle/cows: hooves, horns, hump on the back (common in Zebu cows/bulls), droopy ears, a large bovine snout/muzzle, and distinct body shape/proportions. If the animal is a bovine of any size (even a small calf or a large bull), classify it as "cow".
+            - If it is a canine (dog, puppy, street mongrel), classify it as "dog".
+            - If it is a feline, classify it as "cat".
+            - If it is a bird, classify it as "bird".
+            - If it is any other animal (e.g. goat, sheep, monkey, donkey, pig, buffalo, squirrel, snake, rabbit), classify it as "other".
             """ + locationInfo + "\n" + descPart + """
 
             VETERINARY CONTACTS DATABASE (pick 2-3 nearest based on location):
@@ -64,7 +73,7 @@ public class GeminiService {
 
             Return ONLY valid JSON (no markdown):
             {
-              "species": "dog/cat/cow/bird/other",
+              "species": "exactly one of: dog, cat, cow, bird, other",
               "injuryType": "brief injury description",
               "severity": "critical/urgent/routine",
               "probableCondition": "detailed medical assessment",
@@ -101,7 +110,10 @@ public class GeminiService {
     }
 
     // ─── 3. First Aid chatbot ──────────────────────────────────────────────
-    public String getFirstAid(String species, String injuryDescription, String locationContext) {
+    public String getFirstAid(String species, String injuryDescription, String locationContext, String language) {
+        if (language == null || language.isBlank()) {
+            language = "English";
+        }
         String prompt = String.format("""
             You are a veterinary first aid expert for the Karuṇā animal rescue app in India.
             A citizen found an injured animal and needs immediate first aid guidance.
@@ -109,15 +121,17 @@ public class GeminiService {
             Animal: %s
             Situation: %s
             Location context: %s
+            Requested Language: %s
 
-            Respond ONLY with this JSON (no markdown):
+            Respond ONLY with this JSON structure (no markdown, no additional comments).
+            All text fields and messages inside the JSON values must be translated and written in the requested language (%s). Keep any critical veterinary terminology or specific medicine names recognizable (or in English if appropriate), but translate all descriptions, steps, and advices fully:
             {
-              "immediateSteps": ["step 1", "step 2", "step 3", "step 4"],
-              "doNotDo": ["warning 1", "warning 2"],
-              "whenToCallVet": "urgency description",
-              "estimatedWaitAdvice": "what to do while waiting"
+              "immediateSteps": ["translated step 1", "translated step 2", "translated step 3", "translated step 4"],
+              "doNotDo": ["translated warning 1", "translated warning 2"],
+              "whenToCallVet": "translated urgency description",
+              "estimatedWaitAdvice": "translated what to do while waiting"
             }
-            """, species, injuryDescription, locationContext);
+            """, species, injuryDescription, locationContext, language, language);
 
         return ai.complete(prompt);
     }
@@ -210,6 +224,7 @@ public class GeminiService {
                     .trim();
 
             JsonNode node = mapper.readTree(json);
+            if (node.has("species"))           result.setSpecies(node.get("species").asText().toLowerCase());
             if (node.has("probableCondition")) result.setProbableCondition(node.get("probableCondition").asText());
             if (node.has("severity"))          result.setSeverity(node.get("severity").asText().toLowerCase());
             if (node.has("injuryType"))        result.setInjuryType(node.get("injuryType").asText());

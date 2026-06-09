@@ -114,4 +114,60 @@ public class CaseController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @GetMapping("/{id}/ledger")
+    public ResponseEntity<String> getLedger(@PathVariable Long id) {
+        try {
+            CaseResponse c = caseService.getCase(id);
+            StringBuilder sb = new StringBuilder();
+            sb.append("==================================================\n");
+            sb.append("         KARUNA ANIMAL RESCUE LEDGER - CASE #").append(c.getId()).append("\n");
+            sb.append("==================================================\n\n");
+            sb.append("REPORT DETAILS:\n");
+            sb.append("Species: ").append(c.getSpecies()).append("\n");
+            sb.append("Probable Condition: ").append(c.getProbableCondition()).append("\n");
+            sb.append("Location: ").append(c.getLocationLabel()).append("\n");
+            sb.append("Status: ").append(c.getStatus()).append("\n");
+            sb.append("Estimated Cost: INR ").append(c.getEstimatedCostInr()).append("\n");
+            sb.append("NGO: ").append(c.getNgo() != null ? c.getNgo() : "N/A").append("\n");
+            sb.append("Responder: ").append(c.getAssignedResponder() != null ? c.getAssignedResponder() : "N/A").append("\n");
+            sb.append("Reported On: ").append(c.getCreatedAt()).append("\n\n");
+            
+            sb.append("DONATIONS RECEIVED:\n");
+            sb.append("--------------------------------------------------\n");
+            sb.append(String.format("%-20s | %-12s | %-10s | %-15s | %s\n", "Date", "Donor Name", "Amount", "Method", "Message"));
+            sb.append("--------------------------------------------------\n");
+            int total = 0;
+            if (c.getDonations() != null) {
+                for (var d : c.getDonations()) {
+                    total += d.getAmountInr();
+                    sb.append(String.format("%-20s | %-12s | INR %-6d | %-15s | %s\n", 
+                        d.getTs().toString(), 
+                        d.getDonorName(), 
+                        d.getAmountInr(), 
+                        d.getPaymentMethod() != null ? d.getPaymentMethod() : "UPI", 
+                        d.getMessage() != null ? d.getMessage() : ""));
+                }
+            }
+            sb.append("--------------------------------------------------\n");
+            sb.append("Total Raised: INR ").append(total).append("\n\n");
+            
+            sb.append("CASE TIMELINE EVENTS:\n");
+            sb.append("--------------------------------------------------\n");
+            if (c.getEvents() != null) {
+                for (var ev : c.getEvents()) {
+                    sb.append("[").append(ev.getTs()).append("] ").append(ev.getActor()).append(": ").append(ev.getDetails()).append("\n");
+                }
+            }
+            sb.append("--------------------------------------------------\n");
+            
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"ledger_case_" + id + ".txt\"")
+                    .header("Content-Type", "text/plain; charset=utf-8")
+                    .body(sb.toString());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error generating ledger: " + e.getMessage());
+        }
+    }
 }
+

@@ -33,7 +33,7 @@ public class AdoptionController {
     public ResponseEntity<?> apply(@PathVariable Long caseId, @RequestBody Map<String, String> body) {
         try {
             return ResponseEntity.ok(adoptionService.apply(caseId,
-                    body.get("applicantName"), body.get("contact"), body.get("reason")));
+                    body.get("applicantName"), body.get("contact"), body.get("reason"), body.get("adopterIdUrl")));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -44,6 +44,16 @@ public class AdoptionController {
         try {
             AppStatus status = AppStatus.valueOf(body.get("status"));
             return ResponseEntity.ok(adoptionService.decide(appId, status));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{appId}/checkin")
+    public ResponseEntity<?> addCheckin(@PathVariable Long appId, @RequestBody Map<String, String> body) {
+        try {
+            return ResponseEntity.ok(adoptionService.addCheckin(appId,
+                    body.get("text"), body.get("photoUrl")));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

@@ -28,14 +28,17 @@ public class User {
     private String ngoName;
     private String clinicName; // for VET role
     private Boolean available;
+    private Double latitude;
+    private Double longitude;
 
     public enum Role { CITIZEN, NGO, VET, VOLUNTEER, ADMIN }
 
     public User() {}
 
-    public User(Long id, String email, String password, String name, String phone, Role role, String ngoName, Boolean available) {
+    public User(Long id, String email, String password, String name, String phone, Role role, String ngoName, Boolean available, Double latitude, Double longitude) {
         this.id = id; this.email = email; this.password = password; this.name = name;
         this.phone = phone; this.role = role; this.ngoName = ngoName; this.available = available;
+        this.latitude = latitude; this.longitude = longitude;
     }
 
     // Builder
@@ -43,6 +46,7 @@ public class User {
     public static class Builder {
         private Long id; private String email; private String password; private String name;
         private String phone; private Role role; private String ngoName; private Boolean available;
+        private Double latitude; private Double longitude;
         public Builder id(Long v) { id = v; return this; }
         public Builder email(String v) { email = v; return this; }
         public Builder password(String v) { password = v; return this; }
@@ -53,8 +57,10 @@ public class User {
         private String clinicName;
         public Builder clinicName(String v) { clinicName = v; return this; }
         public Builder available(Boolean v) { available = v; return this; }
+        public Builder latitude(Double v) { latitude = v; return this; }
+        public Builder longitude(Double v) { longitude = v; return this; }
         public User build() {
-            User u = new User(id, email, password, name, phone, role, ngoName, available);
+            User u = new User(id, email, password, name, phone, role, ngoName, available, latitude, longitude);
             u.setClinicName(clinicName);
             return u;
         }
@@ -79,4 +85,8 @@ public class User {
     public void setAvailable(Boolean available) { this.available = available; }
     public String getClinicName() { return clinicName; }
     public void setClinicName(String clinicName) { this.clinicName = clinicName; }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

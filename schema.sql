@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS app_user (
     phone       VARCHAR(50),
     role        VARCHAR(50) NOT NULL,
     ngo_name    VARCHAR(255),
-    available   BOOLEAN DEFAULT TRUE
+    available   BOOLEAN DEFAULT TRUE,
+    latitude    DOUBLE PRECISION,
+    longitude   DOUBLE PRECISION
 );
 
 CREATE TABLE IF NOT EXISTS animal_case (
@@ -35,12 +37,14 @@ CREATE TABLE IF NOT EXISTS animal_case (
 );
 
 CREATE TABLE IF NOT EXISTS donation (
-    id          SERIAL PRIMARY KEY,
-    case_id     INTEGER NOT NULL REFERENCES animal_case(id),
-    donor_name  VARCHAR(255) NOT NULL,
-    amount_inr  DOUBLE PRECISION NOT NULL,
-    message     TEXT,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id                  SERIAL PRIMARY KEY,
+    case_id             INTEGER NOT NULL REFERENCES animal_case(id),
+    donor_name          VARCHAR(255) NOT NULL,
+    amount_inr          DOUBLE PRECISION NOT NULL,
+    message             TEXT,
+    payment_method      VARCHAR(100) DEFAULT 'UPI',
+    bill_offset_details VARCHAR(500),
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS adoption_application (
@@ -50,5 +54,7 @@ CREATE TABLE IF NOT EXISTS adoption_application (
     contact         VARCHAR(255),
     reason          TEXT,
     status          VARCHAR(50) DEFAULT 'pending',
+    adopter_id_url  TEXT,
+    checkins_logs   TEXT DEFAULT '[]',
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

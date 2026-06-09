@@ -5,15 +5,15 @@
 
 -- ─── Users ─────────────────────────────────────────────────────
 
-INSERT INTO app_user (email, password, name, phone, role, ngo_name, available)
+INSERT INTO app_user (email, password, name, phone, role, ngo_name, available, latitude, longitude)
 VALUES
-  ('ngo@karuna.app',  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Vijayawada Animal Trust',   '91-866-1234567', 'NGO',       'Vijayawada Animal Trust',  true),
-  ('volunteer@k.com',  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Ravi Kumar',              '91-9876543210', 'VOLUNTEER', null,                       true),
-  ('sunita@k.com',     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Sunita Patel',            '91-9876543211', 'VOLUNTEER', null,                       true),
-  ('arjun@k.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Arjun Reddy',             '91-9876543212', 'VOLUNTEER', null,                       true),
-  ('lakshmi@k.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Lakshmi Devi',            '91-9876543213', 'VOLUNTEER', null,                       true),
-  ('citizen@k.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Priya Sharma',            '91-9876543214', 'CITIZEN',   null,                       null),
-  ('anand@k.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Anand Rao',              '91-9876543215', 'CITIZEN',   null,                       null);
+  ('ngo@karuna.app',  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Vijayawada Animal Trust',   '91-866-1234567', 'NGO',       'Vijayawada Animal Trust',  true, null, null),
+  ('volunteer@k.com',  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Ravi Kumar',              '91-9876543210', 'VOLUNTEER', null,                       true, 16.5050, 80.6400),
+  ('sunita@k.com',     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Sunita Patel',            '91-9876543211', 'VOLUNTEER', null,                       true, 16.5100, 80.6500),
+  ('arjun@k.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Arjun Reddy',             '91-9876543212', 'VOLUNTEER', null,                       true, 16.5000, 80.6600),
+  ('lakshmi@k.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Lakshmi Devi',            '91-9876543213', 'VOLUNTEER', null,                       true, 16.5150, 80.6450),
+  ('citizen@k.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Priya Sharma',            '91-9876543214', 'CITIZEN',   null,                       null, null, null),
+  ('anand@k.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Anand Rao',              '91-9876543215', 'CITIZEN',   null,                       null, null, null);
 
 -- ─── Cases ─────────────────────────────────────────────────────
 
