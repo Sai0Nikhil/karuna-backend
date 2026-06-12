@@ -24,7 +24,7 @@ public class AiProviderConfig {
 
     private static final Logger log = LoggerFactory.getLogger(AiProviderConfig.class);
 
-    @Value("${ai.provider:gemini}")
+    @Value("${ai.provider:claude}")
     private String provider;
 
     @Bean
@@ -34,8 +34,8 @@ public class AiProviderConfig {
             case "claude", "anthropic" -> claude;
             case "gemini", "google"    -> gemini;
             default -> {
-                log.warn("Unknown ai.provider '{}', falling back to Gemini", provider);
-                yield gemini;
+                log.warn("Unknown ai.provider '{}', falling back to Claude", provider);
+                yield claude;
             }
         };
         log.info("╔══════════════════════════════════════╗");

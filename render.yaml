@@ -14,7 +14,7 @@ services:
       - key: KARUNA_JWT_SECRET
         sync: false
       - key: AI_PROVIDER
-        value: gemini        # or claude
+        value: claude        # or claude
       - key: GEMINI_API_KEY
         sync: false
       - key: CLAUDE_API_KEY
